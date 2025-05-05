@@ -100,7 +100,7 @@ export function createScene(engine) {
     step.checkCollisions = true;
   }
 
-  // 🎨 Portraits (gauche du musée)
+  // 🎨 Portraits
   const portraitCount = 3;
   const spacing = 12;
   const baseX = -museumWidth / 2 + 5.5;
@@ -120,37 +120,38 @@ export function createScene(engine) {
       height: 6,
       depth: 0.3
     }, scene);
-
     portrait.position = new BABYLON.Vector3(baseX, 3, z);
     portrait.rotation.y = -Math.PI / 2;
     portrait.checkCollisions = false;
     portrait.isPickable = false;
 
     const mat = new BABYLON.StandardMaterial(`portraitMat_${i}`, scene);
-    if (i === 0) {
-      mat.emissiveTexture = new BABYLON.Texture("assets/textures/Dream1.png", scene);
-    } else {
-      mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
-    }
-    portrait.material = mat;
+    mat.specularColor = new BABYLON.Color3(0, 0, 0);
+    mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
 
+    if (i === 0) {
+      mat.diffuseTexture = new BABYLON.Texture("assets/textures/Dream1.png", scene);
+    }
+
+    portrait.material = mat;
     portrait.metadata = {
       isPortrait: true,
       teleportTo: dreamPositions[i]
     };
 
+    // dos du portrait
     if (i === 0) {
       const back = BABYLON.MeshBuilder.CreatePlane(`portrait_back_${i}`, {
         width: 4,
         height: 6
       }, scene);
-      back.position = portrait.position.clone().add(new BABYLON.Vector3(-0.16, 0, 0));
-      back.rotation.y = Math.PI / 2;
+      back.position = portrait.position.clone().add(new BABYLON.Vector3(0.15, 0, 0));
+      back.rotation = portrait.rotation.clone().add(new BABYLON.Vector3(0, Math.PI, 0));
       const backMat = new BABYLON.StandardMaterial(`portraitBackMat_${i}`, scene);
       backMat.diffuseTexture = new BABYLON.Texture("assets/textures/backDream1.png", scene);
-      backMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+      backMat.specularColor = new BABYLON.Color3(0, 0, 0);
       back.material = backMat;
-      back.isPickable = false;
+      back.parent = portrait;
     }
 
     const base = BABYLON.MeshBuilder.CreateCylinder(`socle_${i}`, {
