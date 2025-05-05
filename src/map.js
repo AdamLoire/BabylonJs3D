@@ -127,13 +127,31 @@ export function createScene(engine) {
     portrait.isPickable = false;
 
     const mat = new BABYLON.StandardMaterial(`portraitMat_${i}`, scene);
-    mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+    if (i === 0) {
+      mat.emissiveTexture = new BABYLON.Texture("assets/textures/Dream1.png", scene);
+    } else {
+      mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+    }
     portrait.material = mat;
 
     portrait.metadata = {
       isPortrait: true,
       teleportTo: dreamPositions[i]
     };
+
+    if (i === 0) {
+      const back = BABYLON.MeshBuilder.CreatePlane(`portrait_back_${i}`, {
+        width: 4,
+        height: 6
+      }, scene);
+      back.position = portrait.position.clone().add(new BABYLON.Vector3(-0.16, 0, 0));
+      back.rotation.y = Math.PI / 2;
+      const backMat = new BABYLON.StandardMaterial(`portraitBackMat_${i}`, scene);
+      backMat.diffuseTexture = new BABYLON.Texture("assets/textures/backDream1.png", scene);
+      backMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+      back.material = backMat;
+      back.isPickable = false;
+    }
 
     const base = BABYLON.MeshBuilder.CreateCylinder(`socle_${i}`, {
       diameter: 2.5,
@@ -158,20 +176,18 @@ export function createScene(engine) {
     platform.checkCollisions = true;
   }
 
-  // 🍭 Sucettes suspendues au sol
+  // 🍭 Sucettes
   const addLollipop = (name, position) => {
-    // bâton
     const stick = BABYLON.MeshBuilder.CreateCylinder(`${name}_stick`, {
       height: 4,
       diameter: 0.2
     }, scene);
     stick.position = position.clone();
-    stick.position.y -= 2; // le bâton part du sol vers le bonbon
+    stick.position.y -= 2;
     const stickMat = new BABYLON.StandardMaterial(`${name}_stickMat`, scene);
     stickMat.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
     stick.material = stickMat;
 
-    // bonbon
     const candy = BABYLON.MeshBuilder.CreateSphere(`${name}_head`, {
       diameter: 1.5,
       segments: 16
@@ -184,7 +200,6 @@ export function createScene(engine) {
     candy.material = candyMat;
   };
 
-  // Place la base des sucettes sur le sol (Y=2 pour que le bâton descende jusqu'à Y=0)
   addLollipop("lollipop1", new BABYLON.Vector3(-10, 2, 35));
   addLollipop("lollipop2", new BABYLON.Vector3(10, 2, 35));
 
