@@ -1,3 +1,7 @@
+// File: sceneMap.js
+
+import { createDream1 } from "../assets/dreams/dream1.js";
+
 export function createScene(engine) {
   const scene = new BABYLON.Scene(engine);
   scene.clearColor = new BABYLON.Color3(1, 0.9, 1);
@@ -23,6 +27,7 @@ export function createScene(engine) {
   const museumDepth = 80;
   const museumHeight = 25;
 
+  // création musée, à refaire
   const floor = BABYLON.MeshBuilder.CreateBox("floor", {
     width: museumWidth,
     height: 1,
@@ -95,104 +100,96 @@ export function createScene(engine) {
       (i + 1) * stepHeight / 2 - 0.7,
       topZ + stepDepth * (stepCount - i - 0.5)
     );
-
     step.material = wallMat;
     step.checkCollisions = true;
   }
 
-  // 🎨 Portraits
+  // data pour création portraitss
   const portraitCount = 3;
   const spacing = 12;
   const baseX = -museumWidth / 2 + 5.5;
   const startZ = 20;
 
+  // positions des tps (où le joueur va être tp quand il rentre dans le portraits)
   const dreamPositions = [
-    new BABYLON.Vector3(1000, 2, 0),
+    new BABYLON.Vector3(900, 1, 120),
     new BABYLON.Vector3(2000, 2, 0),
     new BABYLON.Vector3(3000, 2, 0),
   ];
 
+  // création portraits
+
   for (let i = 0; i < portraitCount; i++) {
     const z = startZ - i * spacing;
+
 
     const portrait = BABYLON.MeshBuilder.CreateBox(`portrait_${i}`, {
       width: 4,
       height: 6,
       depth: 0.3
     }, scene);
+    
     portrait.position = new BABYLON.Vector3(baseX, 3, z);
     portrait.rotation.y = -Math.PI / 2;
     portrait.checkCollisions = false;
-    portrait.isPickable = false;
+    portrait.isPickable = true;
 
     const mat = new BABYLON.StandardMaterial(`portraitMat_${i}`, scene);
-    mat.specularColor = new BABYLON.Color3(0, 0, 0);
-    mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
-
+    //textures portrait 1
     if (i === 0) {
       mat.diffuseTexture = new BABYLON.Texture("assets/textures/Dream1.png", scene);
+      mat.bumpTexture = new BABYLON.Texture("assets/textures/backDream1.png", scene);
+      mat.specularPower = 64;
+    } else {
+      mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
     }
-
     portrait.material = mat;
-    portrait.metadata = {
-      isPortrait: true,
-      teleportTo: dreamPositions[i]
-    };
 
-    // dos du portrait
-    if (i === 0) {
-      const back = BABYLON.MeshBuilder.CreatePlane(`portrait_back_${i}`, {
-        width: 4,
-        height: 6
-      }, scene);
-      back.position = portrait.position.clone().add(new BABYLON.Vector3(0.15, 0, 0));
-      back.rotation = portrait.rotation.clone().add(new BABYLON.Vector3(0, Math.PI, 0));
-      const backMat = new BABYLON.StandardMaterial(`portraitBackMat_${i}`, scene);
-      backMat.diffuseTexture = new BABYLON.Texture("assets/textures/backDream1.png", scene);
-      backMat.specularColor = new BABYLON.Color3(0, 0, 0);
-      back.material = backMat;
-      back.parent = portrait;
-    }
+    // data pour tp (récup positions)
+    portrait.metadata = { isPortrait: true, teleportTo: dreamPositions[i] };
 
-    const base = BABYLON.MeshBuilder.CreateCylinder(`socle_${i}`, {
-      diameter: 2.5,
-      height: 0.4
-    }, scene);
+    // Action manager pour tp
+    portrait.actionManager = new BABYLON.ActionManager(scene);
+    portrait.actionManager.registerAction(
+      new BABYLON.ExecuteCodeAction(
+        BABYLON.ActionManager.OnPickTrigger,
+        () => {
+          const tp = portrait.metadata.teleportTo;
+          scene.activeCamera.position = tp.clone();
+        }
+      )
+    );
+
+    // socle painture; actuellement sous le sol du musée, à changer quand on rajoute le jump
+    const base = BABYLON.MeshBuilder.CreateCylinder(`socle_${i}`, { diameter: 2.5, height: 0.4 }, scene);
     base.position = new BABYLON.Vector3(baseX, 0.2, z);
     const baseMat = new BABYLON.StandardMaterial(`socleMat_${i}`, scene);
-    baseMat.diffuseColor = new BABYLON.Color3(0.6, 0.2, 0.2);
     base.material = baseMat;
     base.checkCollisions = true;
   }
 
-  // 🌌 Plates-formes des rêves
-  for (let i = 0; i < 3; i++) {
-    const platform = BABYLON.MeshBuilder.CreateBox(`dream_platform_${i}`, {
-      width: 300,
-      height: 2,
-      depth: 300
-    }, scene);
+  // création map rêve 1
+  createDream1(scene);
+
+  // différentes map, map = rêve (hors lobby & hors map 1)
+  // plateforme pour prévisualiser les tps et les distances + map 
+  for (let i = 1; i < 3; i++) {
+    const platform = BABYLON.MeshBuilder.CreateBox(`dream_platform_${i}`, { width: 300, height: 2, depth: 300 }, scene);
     platform.position = dreamPositions[i];
     platform.material = groundMat;
     platform.checkCollisions = true;
   }
 
-  // 🍭 Sucettes
+  // structures pour faire de la déco
   const addLollipop = (name, position) => {
-    const stick = BABYLON.MeshBuilder.CreateCylinder(`${name}_stick`, {
-      height: 4,
-      diameter: 0.2
-    }, scene);
+    const stick = BABYLON.MeshBuilder.CreateCylinder(`${name}_stick`, { height: 4, diameter: 0.2 }, scene);
     stick.position = position.clone();
     stick.position.y -= 2;
     const stickMat = new BABYLON.StandardMaterial(`${name}_stickMat`, scene);
     stickMat.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
     stick.material = stickMat;
 
-    const candy = BABYLON.MeshBuilder.CreateSphere(`${name}_head`, {
-      diameter: 1.5,
-      segments: 16
-    }, scene);
+    const candy = BABYLON.MeshBuilder.CreateSphere(`${name}_head`, { diameter: 1.5, segments: 16 }, scene);
     candy.position = position.clone();
     const candyMat = new BABYLON.StandardMaterial(`${name}_mat`, scene);
     candyMat.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());

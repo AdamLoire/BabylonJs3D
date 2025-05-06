@@ -12,14 +12,14 @@ export function setupCamera(scene, canvas) {
 
   camera.attachControl(canvas, false);
 
-  // Permet de voir très bas (presque sous la cible) et très haut (presque au-dessus)
+  // débloquer la cam, pouvoir voir de haut en bas sous arc Cam
   camera.lowerBetaLimit   = BABYLON.Tools.ToRadians(5);             // ≈ 5°
   camera.upperBetaLimit   = Math.PI - BABYLON.Tools.ToRadians(5);   // ≈ 175°
   camera.lowerRadiusLimit = 7;
   camera.upperRadiusLimit = 14;
   camera.allowUpsideDown  = true;
 
-  camera.inputs.clear(); // on garde le contrôle manuel en pointer-lock
+  camera.inputs.clear(); // pointeur lock souris
 
   let isPointerLocked = false;
 

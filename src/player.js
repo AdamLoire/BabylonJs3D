@@ -3,6 +3,7 @@ export class Player {
     this.scene = scene;
     this.root = null;
     this.mesh = null;
+    //vitesse du joueur, ne pas modifier
     this.speed = 0.28;
   }
 
@@ -37,6 +38,7 @@ export class Player {
     debugBox.isVisible = true;
   }
 
+  // collisions avec sol, ne pas transperser le sol -> meshs / pas un objet solide de base
   moveXZ(directionVec) {
     const moveVec = directionVec.clone().normalize().scale(this.speed);
     this.root.moveWithCollisions(moveVec);

@@ -1,7 +1,8 @@
 export function setupControls(scene, player, camera) {
   const keys = {};
+  //sensibilité souris, ne pas modifier (sensibilité souris quand caméra lock avec J)
   const sensitivity = 0.005;
-
+//events input
   window.addEventListener("keydown", (e) => {
     keys[e.key.toLowerCase()] = true;
     if (e.key === "j") {
@@ -33,7 +34,7 @@ export function setupControls(scene, player, camera) {
     const camMatrix = camera.getWorldMatrix();
     const forward = new BABYLON.Vector3(camMatrix.m[8], 0, camMatrix.m[10]).normalize();
     const right = new BABYLON.Vector3(camMatrix.m[0], 0, camMatrix.m[2]).normalize();
-
+    //gestions inputs, à voir pour pouvoir faire un menu settings et avoir des touches dynamic
     let moveVector = BABYLON.Vector3.Zero();
     if (keys["z"]) moveVector.addInPlace(forward);
     if (keys["s"]) moveVector.addInPlace(forward.scale(-1));
@@ -45,9 +46,14 @@ export function setupControls(scene, player, camera) {
     }
 
     player.moveXZ(moveVector);
-    player.root.moveWithCollisions(new BABYLON.Vector3(0, -0.02, 0)); // gravité simple
+    // gravité, 2eme valeur pour gérer vitesse de chute 
+    /*
+    * chute a 0.1 pour avoir une gravité plus ou moins reel (gravité pas trop violente, mais assez pour suivre les courbures des maps)
+    *A voir pour modifier pour les prochaines maps
+    */
+    player.root.moveWithCollisions(new BABYLON.Vector3(0, -0.1, 0)); 
 
-    // 🎯 Téléportation
+    // Téléportation / check si le player touche un portrait -> console.log pour check
     for (const mesh of scene.meshes) {
       if (mesh.metadata?.isPortrait && player.root.intersectsMesh(mesh, false)) {
         console.log(`[TP] → ${mesh.name}`);
